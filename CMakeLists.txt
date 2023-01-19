@@ -391,8 +391,8 @@ target_sources(basalt
 )
 
 target_link_libraries(basalt
-  PUBLIC ${STD_CXX_FS} basalt::opencv basalt::basalt-headers TBB::tbb
-  PRIVATE basalt::magic_enum rosbag apriltag opengv nlohmann::json fmt::fmt)
+  PUBLIC ${STD_CXX_FS} basalt::basalt-headers TBB::tbb
+  PRIVATE basalt::opencv basalt::magic_enum rosbag apriltag opengv nlohmann::json fmt::fmt)
 target_include_directories(basalt PUBLIC ${ACTUAL_INCLUDE_DIR})
 target_compile_definitions(basalt PUBLIC ${BASALT_COMPILE_DEFINITIONS})
 #target_compile_definitions(basalt PUBLIC BASALT_DISABLE_ASSERTS)
@@ -448,7 +448,8 @@ install(TARGETS basalt_calibrate basalt_calibrate_imu basalt_vio_sim basalt_mapp
   EXPORT BasaltTargets
   RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
   LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+  INCLUDES ${CMAKE_INSTALL_INCLUDEDIR})
 
 if(BASALT_INSTANTIATIONS_DOUBLE)
   install(TARGETS basalt_mapper_sim_naive
@@ -456,6 +457,17 @@ if(BASALT_INSTANTIATIONS_DOUBLE)
     RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
     LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
     ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+endif()
+
+install(DIRECTORY include/
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+if(realsense2_FOUND)
+    install(TARGETS basalt_rs_t265_record basalt_rs_t265_vio
+      EXPORT BasaltTargets
+      RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
+      LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+      ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 endif()
 
 # generate the ConfigVersion.cmake file that will be included by Config.cmake
@@ -480,13 +492,6 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
   "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
 
-if(realsense2_FOUND)
-    install(TARGETS basalt_rs_t265_record basalt_rs_t265_vio
-      EXPORT BasaltTargets
-      RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
-      LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
-      ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
-endif()
 
 file(GLOB SCRIPTS_TO_INSTALL "${CMAKE_CURRENT_SOURCE_DIR}/scripts/basalt_*.py")
 install(PROGRAMS ${SCRIPTS_TO_INSTALL} DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
