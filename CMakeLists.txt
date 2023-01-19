@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.10...3.18)
 
 project(basalt)
 
+set(EXPORT_LIBRARY_VERSION 1.0.0)
+
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/" ${CMAKE_MODULE_PATH})
 
 if(NOT EIGEN_ROOT)
@@ -256,7 +258,7 @@ set(CMAKE_CXX_FLAGS "${BASALT_CXX_FLAGS} ${BASALT_MARCH_FLAGS} ${BASALT_PASSED_C
 
 
 set(EIGEN_INCLUDE_DIR_HINTS ${EIGEN_ROOT})
-find_package(Eigen3 3.4.0 EXACT REQUIRED MODULE)
+find_package(Eigen3 3.4.0 REQUIRED MODULE)
 message(STATUS "Found Eigen headers in: ${EIGEN3_INCLUDE_DIR}")
 if(NOT EIGEN3_INCLUDE_DIR MATCHES "^${EIGEN_ROOT}")
   message(WARNING "Found Eigen headers are outside of specified EIGEN_ROOT '${EIGEN_ROOT}'")
@@ -295,69 +297,72 @@ set_property(TARGET basalt::magic_enum PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${
 # main library
 add_library(basalt SHARED)
 
+set(ACTUAL_INCLUDE_DIR "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>$<INSTALL_INTERFACE:include>")
+
 # List all header and source files with target_sources.
 # This ensures, e.g., that QtCreator >= 6.0 properly recognize these headers to belong to the project.
 # To support cmake < 3.13, use absolute paths (see: https://crascit.com/2016/01/31/enhanced-source-file-handling-with-target_sources/)
+
 target_sources(basalt
   PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/calibration/aprilgrid.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/calibration/calibration_helper.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/calibration/cam_calib.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/calibration/cam_imu_calib.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/calibration/vignette.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/device/rs_t265.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/hash_bow/hash_bow.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/io/dataset_io.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/io/dataset_io_euroc.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/io/dataset_io_kitti.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/io/dataset_io_rosbag.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/io/dataset_io_uzh.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/io/marg_data_io.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/linearization/block_diagonal.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/linearization/imu_block.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/linearization/landmark_block.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/linearization/landmark_block_abs_dynamic.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/linearization/linearization_abs_qr.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/linearization/linearization_abs_sc.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/linearization/linearization_base.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/linearization/linearization_rel_sc.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/optical_flow/frame_to_frame_optical_flow.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/optical_flow/multiscale_frame_to_frame_optical_flow.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/optical_flow/optical_flow.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/optical_flow/patch.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/optical_flow/patch_optical_flow.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/optical_flow/patterns.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/optimization/accumulator.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/optimization/linearize.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/optimization/poses_linearize.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/optimization/poses_optimize.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/optimization/spline_linearize.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/optimization/spline_optimize.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/utils/ba_utils.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/utils/cast_utils.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/utils/common_types.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/utils/filesystem.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/utils/format.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/utils/imu_types.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/utils/keypoints.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/utils/nfr.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/utils/sim_utils.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/utils/system_utils.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/utils/test_utils.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/utils/time_utils.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/utils/tracks.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/utils/union_find.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/utils/vio_config.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/utils/vis_utils.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/vi_estimator/ba_base.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/vi_estimator/landmark_database.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/vi_estimator/marg_helper.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/vi_estimator/nfr_mapper.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/vi_estimator/sc_ba_base.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/vi_estimator/sqrt_ba_base.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/vi_estimator/sqrt_keypoint_vio.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/vi_estimator/sqrt_keypoint_vo.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/basalt/vi_estimator/vio_estimator.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/calibration/aprilgrid.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/calibration/calibration_helper.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/calibration/cam_calib.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/calibration/cam_imu_calib.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/calibration/vignette.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/device/rs_t265.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/hash_bow/hash_bow.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/io/dataset_io.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/io/dataset_io_euroc.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/io/dataset_io_kitti.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/io/dataset_io_rosbag.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/io/dataset_io_uzh.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/io/marg_data_io.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/linearization/block_diagonal.hpp
+    ${ACTUAL_INCLUDE_DIR}/basalt/linearization/imu_block.hpp
+    ${ACTUAL_INCLUDE_DIR}/basalt/linearization/landmark_block.hpp
+    ${ACTUAL_INCLUDE_DIR}/basalt/linearization/landmark_block_abs_dynamic.hpp
+    ${ACTUAL_INCLUDE_DIR}/basalt/linearization/linearization_abs_qr.hpp
+    ${ACTUAL_INCLUDE_DIR}/basalt/linearization/linearization_abs_sc.hpp
+    ${ACTUAL_INCLUDE_DIR}/basalt/linearization/linearization_base.hpp
+    ${ACTUAL_INCLUDE_DIR}/basalt/linearization/linearization_rel_sc.hpp
+    ${ACTUAL_INCLUDE_DIR}/basalt/optical_flow/frame_to_frame_optical_flow.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/optical_flow/multiscale_frame_to_frame_optical_flow.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/optical_flow/optical_flow.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/optical_flow/patch.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/optical_flow/patch_optical_flow.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/optical_flow/patterns.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/optimization/accumulator.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/optimization/linearize.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/optimization/poses_linearize.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/optimization/poses_optimize.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/optimization/spline_linearize.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/optimization/spline_optimize.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/utils/ba_utils.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/utils/cast_utils.hpp
+    ${ACTUAL_INCLUDE_DIR}/basalt/utils/common_types.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/utils/filesystem.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/utils/format.hpp
+    ${ACTUAL_INCLUDE_DIR}/basalt/utils/imu_types.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/utils/keypoints.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/utils/nfr.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/utils/sim_utils.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/utils/system_utils.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/utils/test_utils.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/utils/time_utils.hpp
+    ${ACTUAL_INCLUDE_DIR}/basalt/utils/tracks.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/utils/union_find.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/utils/vio_config.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/utils/vis_utils.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/vi_estimator/ba_base.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/vi_estimator/landmark_database.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/vi_estimator/marg_helper.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/vi_estimator/nfr_mapper.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/vi_estimator/sc_ba_base.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/vi_estimator/sqrt_ba_base.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/vi_estimator/sqrt_keypoint_vio.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/vi_estimator/sqrt_keypoint_vo.h
+    ${ACTUAL_INCLUDE_DIR}/basalt/vi_estimator/vio_estimator.h
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/calibration/aprilgrid.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/calibration/calibraiton_helper.cpp
@@ -388,7 +393,7 @@ target_sources(basalt
 target_link_libraries(basalt
   PUBLIC ${STD_CXX_FS} basalt::opencv basalt::basalt-headers TBB::tbb
   PRIVATE basalt::magic_enum rosbag apriltag opengv nlohmann::json fmt::fmt)
-target_include_directories(basalt PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(basalt PUBLIC ${ACTUAL_INCLUDE_DIR})
 target_compile_definitions(basalt PUBLIC ${BASALT_COMPILE_DEFINITIONS})
 #target_compile_definitions(basalt PUBLIC BASALT_DISABLE_ASSERTS)
 
@@ -452,6 +457,28 @@ if(BASALT_INSTANTIATIONS_DOUBLE)
     LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
     ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 endif()
+
+# generate the ConfigVersion.cmake file that will be included by Config.cmake
+include(CMakePackageConfigHelpers)
+
+write_basic_package_version_file(
+  ${PROJECT_NAME}ConfigVersion.cmake
+  VERSION ${EXPORT_LIBRARY_VERSION}
+  COMPATIBILITY AnyNewerVersion)
+
+# generate the *Config.cmake file
+configure_file(cmake_modules/${PROJECT_NAME}Config.cmake.in ${PROJECT_NAME}Config.cmake @ONLY)
+
+# generate Targets.cmake file from exports learned during the installation
+install(EXPORT BasaltTargets
+  FILE ${PROJECT_NAME}Targets.cmake
+  NAMESPACE ${PROJECT_NAME}::
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
+
+# install the generated version and config files
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
 
 if(realsense2_FOUND)
     install(TARGETS basalt_rs_t265_record basalt_rs_t265_vio
