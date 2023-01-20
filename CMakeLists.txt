@@ -435,8 +435,11 @@ target_link_libraries(basalt_kitti_eval basalt::basalt-headers basalt::cli11)
 
 find_package(realsense2 QUIET)
 if(realsense2_FOUND)
+  add_library(basalt_rs_t265 SHARED src/device/rs_t265.cpp)
+  target_link_libraries(basalt_rs_t265 basalt realsense2::realsense2)
+
   add_executable(basalt_rs_t265_record src/rs_t265_record.cpp src/device/rs_t265.cpp)
-  target_link_libraries(basalt_rs_t265_record basalt realsense2::realsense2 pangolin basalt::cli11)
+  target_link_libraries(basalt_rs_t265_record basalt realsense2::realsense2 pangolin basalt::cli11 basalt::opencv)
 
   add_executable(basalt_rs_t265_vio src/rs_t265_vio.cpp src/device/rs_t265.cpp)
   target_link_libraries(basalt_rs_t265_vio basalt realsense2::realsense2 pangolin basalt::cli11)
@@ -463,6 +466,12 @@ install(DIRECTORY include/
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 if(realsense2_FOUND)
+    install(TARGETS basalt_rs_t265
+      EXPORT BasaltTargets
+      RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
+      LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+      ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+      INCLUDES ${CMAKE_INSTALL_INCLUDEDIR})
     install(TARGETS basalt_rs_t265_record basalt_rs_t265_vio
       EXPORT BasaltTargets
       RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
